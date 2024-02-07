@@ -1,10 +1,12 @@
 package cm.rh.controlador;
 
+import cm.rh.excepcion.RecursoNoEncontradoExcepcion;
 import cm.rh.modelo.Empleado;
 import cm.rh.servicio.EmpleadoServicio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,5 +36,30 @@ public class EmpleadoControlador {
   public Empleado agregarEmpleado(@RequestBody Empleado empleado) {
     logger.info("AGREGAR EMPLEADO:" + empleado);
     return empleadoServicio.guardaEmpleado(empleado);
+  }
+
+  @GetMapping("/empleados/{id}")
+  public ResponseEntity<Empleado> obtenerEmpleadoPorId(@PathVariable Integer id) {
+    Empleado empleado = empleadoServicio.buscarEmpleadoPorId(id);
+    if (empleado == null) {
+      throw new RecursoNoEncontradoExcepcion("No se encontro el empleado: " + id);
+    } else {
+      return ResponseEntity.ok(empleado);
+    }
+  }
+
+  @PutMapping("/empleados/{id}")
+  public ResponseEntity<Empleado> actualizarEmpleado(@PathVariable Integer id, @RequestBody Empleado empleadoRecibido) {
+    Empleado empleado = empleadoServicio.buscarEmpleadoPorId(id);
+    if (empleado == null) {
+      throw new RecursoNoEncontradoExcepcion("El id no existe");
+    } else {
+      empleado.setNombre(empleadoRecibido.getNombre());
+      empleado.setDepartamento(empleadoRecibido.getDepartamento());
+      empleado.setSueldo(empleadoRecibido.getSueldo());
+
+      empleadoServicio.guardaEmpleado(empleado);
+      return ResponseEntity.ok(empleado);
+    }
   }
 }
